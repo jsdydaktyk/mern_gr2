@@ -1,33 +1,62 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import AddUserForm from './AddUserForm'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [usersList, setUsersList] = useState([])
+
+  async function fetchData(){
+    console.log("I am fetching")
+    try{
+      const res = await fetch("http://localhost:8000/api/users", {method: "GET"})
+      if(!res.ok){
+        throw new Error(`network response was not ok: ${res.status}`)
+      }
+
+      const data = await res.json()
+      setUsersList(data)
+
+    }catch(err){
+      console.log("Error: ", err)
+    }
+
+  }
+
+  
+  const deleteUser= async (userId)=>{
+      const confirmation = window.confirm("Czy chcesz skasować użytkownika?")
+
+      if(!confirmation) return
+
+      try{
+        const res = await fetch(`http://localhost:8000/api/users/${userId}`, {method: "DELETE"})
+        
+        if(!res.ok) throw new Error("Error response is not ok")
+        
+        fetchData() // odświeżanie widoku
+
+      }catch(err){
+        console.log(`There was a problem with deleting the user: ${err.message}`)
+      }
+
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>Lista użytkowników</h1>
+      <h2>Users:</h2>
+      <button onClick={fetchData}>Pobierz dane o użytkownikach</button>
+      <ul style={{listStyle:'none'}}>
+        {
+          usersList.map(user=>{
+            return (
+            <li key={user._id} onClick={()=>deleteUser(user._id)}>imię: {user.name}, 
+                               email:{user.email}, 
+                               wiek:{user.age}</li>)
+          })
+        }
+      </ul>
+      <AddUserForm />
     </>
   )
 }
