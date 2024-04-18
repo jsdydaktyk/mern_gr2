@@ -1,7 +1,7 @@
 import { useState } from "react"
 
 
-const AddUserForm = () => {
+const AddUserForm = ({updateUsersList}) => {
 
     const [newUser, setNewUser] = useState({name:"", email:"", age:0})
 
@@ -12,8 +12,18 @@ const AddUserForm = () => {
             const response = await fetch("http://localhost:8000/api/users",{
                 method: "POST",
                 headers: {'Content-type':'application/json'},
-                body: 
+                body: JSON.stringify(newUser)
             })
+
+            if(!response.ok){
+                throw new Error(`Network response was not ok ${response.status}`)
+            }
+
+            const data = await response.json()
+            console.log(`user addded ${data}`)
+            setNewUser({name:"", email:"", age:0})
+            updateUsersList()
+
         } catch(err) {
             console.error(`Some problems with your fetch operation: ${err.message}`)
         }
