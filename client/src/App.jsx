@@ -1,63 +1,35 @@
 import { useState } from 'react'
 import './App.css'
-import AddUserForm from './AddUserForm'
+import AddUserForm from './components/AddUserForm'
+import UserList from './components/UserList'
+import {Routes, Route, Link, useNavigate} from 'react-router-dom'
 
 function App() {
-  const [usersList, setUsersList] = useState([])
-
-  async function fetchData(){
-    console.log("I am fetching")
-    try{
-      const res = await fetch("http://localhost:8000/api/users", {method: "GET"})
-      if(!res.ok){
-        throw new Error(`network response was not ok: ${res.status}`)
-      }
-
-      const data = await res.json()
-      setUsersList(data)
-
-    }catch(err){
-      console.log("Error: ", err)
-    }
-
-  }
+    const navigate = useNavigate()
 
   
-  const deleteUser= async (userId)=>{
-      const confirmation = window.confirm("Czy chcesz skasować użytkownika?")
-
-      if(!confirmation) return
-
-      try{
-        const res = await fetch(`http://localhost:8000/api/users/${userId}`, {method: "DELETE"})
-        
-        if(!res.ok) throw new Error("Error response is not ok")
-        
-        fetchData() // odświeżanie widoku
-
-      }catch(err){
-        console.log(`There was a problem with deleting the user: ${err.message}`)
-      }
-
-  }
 
   return (
     <>
-      <h1>Lista użytkowników</h1>
-      <h2>Users:</h2>
-      <button onClick={fetchData}>Pobierz dane o użytkownikach</button>
-      <ul style={{listStyle:'none'}}>
-        {
-          usersList.map(user=>{
-            return (
-            <li key={user._id} onClick={()=>deleteUser(user._id)}>imię: {user.name}, 
-                               email:{user.email}, 
-                               wiek:{user.age}</li>)
-          })
-        }
+    <h3>M E R N - menadżer więzienia</h3>
+    <nav>
+      <ul>
+        <li>
+          <Link to="/users"> Show Users List </Link>
+        </li>
+        <li>
+          <button onClick={()=>navigate("/add-user")}> You can add a new user </button>
+        </li>
       </ul>
-      <img src='http://localhost:8000/images/bandyta1.webp' alt="user" width="300"/>
-      <AddUserForm updateUsersList={fetchData} />
+    </nav>
+     
+     <Routes>
+      <Route path="/users" element={<UserList />} />
+      <Route path="/add-user" element={<AddUserForm    />} />
+      <Route path="/" element={<div><h1> Welcome to Prison Manager </h1></div>} />
+     </Routes>
+     
+     
     </>
   )
 }
